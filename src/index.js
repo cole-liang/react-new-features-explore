@@ -1,16 +1,22 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
 import * as serviceWorker from "./serviceWorker";
 
 /** Simple Notes board */
-/** Play with useState with complex variable*/
+/** Play with useState with complex variable && useEffect*/
 const NoteApp = () => {
-  const [notes, setNotes] = useState([]);
+  const notesData = JSON.parse(localStorage.getItem("notes"));
+  const [notes, setNotes] = useState(notesData || []);
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
 
-  const removeNote = title =>
+  useEffect(() => {
+    localStorage.setItem("notes", JSON.stringify(notes));
+  });
+
+  const removeNote = title => {
     setNotes(notes.filter(note => note.title !== title));
+  };
 
   const addNote = e => {
     e.preventDefault();
