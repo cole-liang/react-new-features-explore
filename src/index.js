@@ -5,14 +5,24 @@ import * as serviceWorker from "./serviceWorker";
 /** Simple Notes board */
 /** Play with useState with complex variable && useEffect*/
 const NoteApp = () => {
-  const notesData = JSON.parse(localStorage.getItem("notes"));
-  const [notes, setNotes] = useState(notesData || []);
+  const [notes, setNotes] = useState([]);
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
 
   useEffect(() => {
-    localStorage.setItem("notes", JSON.stringify(notes));
+    console.log("I am called EVERYTIME when the app is rendered!");
   });
+
+  useEffect(() => {
+    const notesData = JSON.parse(localStorage.getItem("notes"));
+    setNotes(notesData || []);
+    console.log("I am called ONLY ONCE when the app is INITIALLY rendered!");
+  }, []);
+
+  useEffect(() => {
+    console.log('I am called whenever "notes" is changed!');
+    localStorage.setItem("notes", JSON.stringify(notes));
+  }, [notes]);
 
   const removeNote = title => {
     setNotes(notes.filter(note => note.title !== title));
@@ -30,13 +40,7 @@ const NoteApp = () => {
     <div>
       <div>Notes:</div>
       {notes.map((note, index) => (
-        <div key={note.title}>
-          <h1>
-            {index + 1}.{note.title}
-          </h1>
-          <p>{note.body}</p>
-          <button onClick={() => removeNote(note.title)}>X</button>
-        </div>
+        <Note note={note} index={index} removeNote={removeNote} />
       ))}
       <p>Add Note:</p>
       <form onSubmit={addNote}>
@@ -54,6 +58,27 @@ const NoteApp = () => {
         />
         <button type="submit">Add note</button>
       </form>
+    </div>
+  );
+};
+
+const Note = ({ note, index, removeNote }) => {
+  //Make sure the function is called when the component is rendered
+  //rathen than being called everytime sth is changed(if no second arg specified)
+  useEffect(() => {
+    console.log("Called only when Note component is rendered");
+    return console.log(
+      "Called when Note component unmounts(deleted from the array)"
+    );
+  }, []);
+
+  return (
+    <div key={note.title}>
+      <h1>
+        {index + 1}.{note.title}
+      </h1>
+      <p>{note.body}</p>
+      <button onClick={() => removeNote(note.title)}>X</button>
     </div>
   );
 };
