@@ -1,11 +1,25 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useReducer } from "react";
 import ReactDOM from "react-dom";
 import * as serviceWorker from "./serviceWorker";
+
+const notesReducer = (state, action) => {
+  switch (action.type) {
+    case "POPULATE_NOTES":
+      return action.notes;
+    case "ADD_NOTE":
+      return [...state, action.note];
+    case "DELETE_NOTE":
+      return state.filter(note => note.title !== action.title);
+    default:
+      return state;
+  }
+};
 
 /** Simple Notes board */
 /** Play with useState with complex variable && useEffect*/
 const NoteApp = () => {
-  const [notes, setNotes] = useState([]);
+  // const [notes, setNotes] = useState([]);
+  const [notes, notesDispatch] = useReducer(notesReducer, []);
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
 
@@ -15,7 +29,8 @@ const NoteApp = () => {
 
   useEffect(() => {
     const notesData = JSON.parse(localStorage.getItem("notes"));
-    setNotes(notesData || []);
+    // setNotes(notesData || []);
+    notesDispatch({ type: "POPULATE_NOTES", notes: notesData });
     console.log("I am called ONLY ONCE when the app is INITIALLY rendered!");
   }, []);
 
@@ -25,13 +40,15 @@ const NoteApp = () => {
   }, [notes]);
 
   const removeNote = title => {
-    setNotes(notes.filter(note => note.title !== title));
+    // setNotes(notes.filter(note => note.title !== title));
+    notesDispatch({ type: "DELETE_NOTE", title });
   };
 
   const addNote = e => {
     e.preventDefault();
 
-    setNotes([...notes, { title, body }]);
+    // setNotes([...notes, { title, body }]);
+    notesDispatch({ type: "ADD_NOTE", note: { title, body } });
     setBody("");
     setTitle("");
   };
@@ -40,7 +57,12 @@ const NoteApp = () => {
     <div>
       <div>Notes:</div>
       {notes.map((note, index) => (
-        <Note note={note} index={index} removeNote={removeNote} />
+        <Note
+          key={note.title}
+          note={note}
+          index={index}
+          removeNote={removeNote}
+        />
       ))}
       <p>Add Note:</p>
       <form onSubmit={addNote}>
@@ -67,13 +89,13 @@ const Note = ({ note, index, removeNote }) => {
   //rathen than being called everytime sth is changed(if no second arg specified)
   useEffect(() => {
     console.log("Called only when Note component is rendered");
-    return console.log(
-      "Called when Note component unmounts(deleted from the array)"
-    );
+    return () => {
+      console.log("Called when Note component unmounts");
+    };
   }, []);
 
   return (
-    <div key={note.title}>
+    <div>
       <h1>
         {index + 1}.{note.title}
       </h1>
